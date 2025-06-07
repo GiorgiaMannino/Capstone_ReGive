@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { Container, Button, Alert, Modal } from "react-bootstrap";
 import { TiPlus } from "react-icons/ti";
 import { GoHeart, GoHeartFill } from "react-icons/go";
+import { FaComment } from "react-icons/fa";
+import { FaRegComment } from "react-icons/fa6";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 import ArticleCard from "./ArticleCard";
@@ -75,11 +77,81 @@ function BeforeAfterPostDetail({ post, onClose, currentUser, onDelete }) {
   const [hovering, setHovering] = useState(false);
   const token = localStorage.getItem("token");
 
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState("");
+  const [loadingComments, setLoadingComments] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const commentsRef = useRef(null);
+  const [showComments, setShowComments] = useState(false);
+
   const isAuthorOrAdmin =
     currentUser &&
     (currentUser.email === post.authorEmail ||
       currentUser.roles?.includes("ROLE_ADMIN") ||
       currentUser.roles?.includes("admin"));
+
+  useEffect(() => {
+    async function fetchComments() {
+      setLoadingComments(true);
+      try {
+        const res = await fetch(`http://localhost:8080/api/beforeafter/${post.id}/comments`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error("Errore nel caricamento dei commenti");
+        const data = await res.json();
+        setComments(data);
+      } catch (e) {
+        console.error("Errore nei commenti:", e);
+      } finally {
+        setLoadingComments(false);
+      }
+    }
+
+    fetchComments();
+  }, [post.id]);
+
+  async function handleSubmitComment() {
+    if (!newComment.trim()) return;
+
+    setSubmitting(true);
+    try {
+      const res = await fetch(`http://localhost:8080/api/beforeafter/${post.id}/comments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ content: newComment }),
+      });
+
+      if (!res.ok) throw new Error("Errore durante l'invio del commento");
+
+      setNewComment("");
+      const updatedComments = await fetch(`http://localhost:8080/api/beforeafter/${post.id}/comments`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }).then((res) => res.json());
+
+      setComments(updatedComments);
+    } catch (e) {
+      alert(e.message);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  function toggleComments() {
+    setShowComments((prev) => {
+      const next = !prev;
+      if (next) {
+        setTimeout(() => {
+          if (commentsRef.current) {
+            commentsRef.current.scrollIntoView({ behavior: "smooth" });
+          }
+        }, 0);
+      }
+      return next;
+    });
+  }
 
   async function toggleLike() {
     const newLiked = !liked;
@@ -93,7 +165,6 @@ function BeforeAfterPostDetail({ post, onClose, currentUser, onDelete }) {
       });
       if (!res.ok) throw new Error("Errore nel like");
     } catch (e) {
-      // Rollback
       setLiked(!newLiked);
       setLikesCount((prev) => (!newLiked ? prev + 1 : prev - 1));
       alert(e.message);
@@ -154,18 +225,86 @@ function BeforeAfterPostDetail({ post, onClose, currentUser, onDelete }) {
         <div className="mb-3">
           <MediaSlider mediaFiles={post.mediaFiles} />
         </div>
+        <div className="d-flex align-items-center justify-content-end mb-3">
+          <div
+            className="d-flex align-items-center me-5"
+            style={{ cursor: "pointer", userSelect: "none" }}
+            onClick={toggleLike}
+            title={liked ? "Togli Mi Piace" : "Metti Mi Piace"}
+            onMouseEnter={() => setHovering(true)}
+            onMouseLeave={() => setHovering(false)}
+          >
+            {liked || hovering ? <GoHeartFill className="me-2 heart-icon" /> : <GoHeart className="me-2 heart-icon" />}
+            <span>{likesCount}</span>
+          </div>
 
-        <div
-          className=" d-flex align-items-center mb-3"
-          style={{ cursor: "pointer", userSelect: "none" }}
-          onClick={toggleLike}
-          title={liked ? "Togli Mi Piace" : "Metti Mi Piace"}
-          onMouseEnter={() => setHovering(true)}
-          onMouseLeave={() => setHovering(false)}
-        >
-          {liked || hovering ? <GoHeartFill className="me-3 heart-icon" /> : <GoHeart className="heart-icon me-2" />}
-          <span>{likesCount}</span>
+          <div
+            className="d-flex align-items-center"
+            style={{ cursor: "pointer", userSelect: "none" }}
+            onClick={toggleComments}
+            title="Vai ai commenti"
+          >
+            <FaRegComment className="me-2 green" size={18} />
+            <span>{comments.length}</span>
+          </div>
         </div>
+
+        {showComments && (
+          <>
+            <hr className="my-3 green" />
+            <div className="d-flex" ref={commentsRef}>
+              <h5 className="mb-3 me-1 mt-4 ">Commenti</h5>
+            </div>
+
+            {loadingComments ? (
+              <Loader message="Caricamento commenti..." />
+            ) : comments.length === 0 ? (
+              <small className="text-secondary">Ancora nessun commento. Commenta prima di tutti!</small>
+            ) : (
+              <ul className="list-unstyled">
+                {comments.map((comment, idx) => (
+                  <li key={idx} className=" mb-3 bg-light rounded">
+                    <div
+                      className="border rounded-4 p-3 "
+                      style={{ wordWrap: "break-word", whiteSpace: "normal", backgroundColor: "#f0f0f0" }}
+                    >
+                      <strong className="green">{comment.authorUsername || comment.authorEmail}</strong>
+                      <p className="mb-1">{comment.content}</p>
+                    </div>
+
+                    <small className="d-block text-muted text-end" style={{ fontSize: "0.7em" }}>
+                      {new Date(comment.createdAt).toLocaleString("it-IT", {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: undefined,
+                      })}
+                    </small>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {currentUser && (
+              <div className="mt-3">
+                <textarea
+                  className="form-control mb-2"
+                  rows="3"
+                  placeholder="Scrivi un commento..."
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                />
+                <div className="d-flex justify-content-end">
+                  <button className="btn btn-green text-white mt-2" onClick={handleSubmitComment} disabled={submitting}>
+                    {submitting ? "Invio..." : "Commenta"}
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </Modal.Body>
     </Modal>
   );

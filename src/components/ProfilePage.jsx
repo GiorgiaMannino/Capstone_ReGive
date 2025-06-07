@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { useParams, useNavigate } from "react-router-dom";
-import { Container, Row, Col, Image, Spinner, Alert, Form, Button, Modal } from "react-bootstrap";
+import { Container, Row, Col, Image, Alert, Form, Button, Modal } from "react-bootstrap";
 import { FaEdit } from "react-icons/fa";
-import { MdOutlineCameraAlt } from "react-icons/md";
+import { FaCamera } from "react-icons/fa";
+import Loader from "./Loader";
 import ArticleModal from "./ArticleModal";
 import ArticleCard from "./ArticleCard";
 import {
@@ -19,6 +20,7 @@ import {
   deleteUserProfileByAdmin,
 } from "../redux/actions/index";
 
+// Decodifica JWT
 function parseJwt(token) {
   try {
     const base64Url = token.split(".")[1];
@@ -26,9 +28,7 @@ function parseJwt(token) {
     const jsonPayload = decodeURIComponent(
       atob(base64)
         .split("")
-        .map((c) => {
-          return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
-        })
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
         .join("")
     );
     return JSON.parse(jsonPayload);
@@ -41,29 +41,34 @@ function parseJwt(token) {
 const ProfilePage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { userId } = useParams(); // da URL
+  const { userId } = useParams();
+
   const fileInputRef = useRef();
 
-  const [loading, setLoading] = useState(true);
-  const [selectedArticle, setSelectedArticle] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [profileDescription, setProfileDescription] = useState("");
-  const [isEditingProfileDescription, setIsEditingProfileDescription] = useState(false);
-  const [isEditingArticle, setIsEditingArticle] = useState(false);
-
+  const [authUser, setAuthUser] = useState(null);
   const [viewedUser, setViewedUser] = useState(null);
   const [viewedUserArticles, setViewedUserArticles] = useState([]);
+
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [authUser, setAuthUser] = useState(null);
+  const [deleteError, setDeleteError] = useState(null);
 
-  /*   const isOwnProfile = userId && authUser?.id ? Number(userId) === authUser.id : false;
-  console.log("authUser.id:", authUser?.id);
-  console.log("authUser.role:", authUser?.role);
+  const [profileDescription, setProfileDescription] = useState("");
+  const [isEditingProfileDescription, setIsEditingProfileDescription] = useState(false);
 
-  const isAdmin = authUser?.role === "ADMIN" || authUser?.role === "admin"; */
+  const [selectedArticle, setSelectedArticle] = useState(null);
+  const [isEditingArticle, setIsEditingArticle] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleteError, setDeleteError] = useState(null);
+
+  const isOwnProfile = userId === undefined;
+
+  const isAdmin = useMemo(() => {
+    if (!authUser) return false;
+    if (Array.isArray(authUser.role)) return authUser.role.includes("ROLE_ADMIN");
+    return authUser.role === "ROLE_ADMIN";
+  }, [authUser]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -75,7 +80,7 @@ const ProfilePage = () => {
 
     const decoded = parseJwt(token);
     const userRole = decoded?.role || decoded?.roles || decoded?.authorities?.[0] || null;
-    const userIdFromToken = decoded?.id || decoded?.userId || null;
+    const userIdFromToken = decoded?.sub || decoded?.userId || null;
 
     setAuthUser({
       id: userIdFromToken,
@@ -85,20 +90,14 @@ const ProfilePage = () => {
 
     const loadProfile = async () => {
       try {
-        const profileData =
-          Number(userId) === Number(userIdFromToken)
-            ? await fetchUserProfile(token)
-            : await fetchUserProfileById(token, userId);
+        const profileData = userId ? await fetchUserProfileById(token, userId) : await fetchUserProfile(token);
 
-        const articles =
-          Number(userId) === Number(userIdFromToken)
-            ? await fetchUserArticles(token)
-            : await fetchArticlesByUserId(token, userId);
+        const articles = userId ? await fetchArticlesByUserId(token, userId) : await fetchUserArticles(token);
 
         setViewedUser(profileData);
         setViewedUserArticles(articles.sort((a, b) => b.id - a.id));
 
-        if (Number(userId) === Number(userIdFromToken)) {
+        if (!userId) {
           dispatch({ type: "SET_USER_PROFILE", payload: profileData });
         }
 
@@ -113,24 +112,6 @@ const ProfilePage = () => {
     loadProfile();
   }, [dispatch, userId]);
 
-  // ✅ Calcoli dinamici qui
-  const isOwnProfile = authUser?.id && userId ? Number(userId) === Number(authUser.id) : false;
-
-  console.log("authUser.id:", authUser);
-  console.log("userId:", userId);
-
-  const isAdmin = useMemo(() => {
-    if (!authUser) return false;
-    if (Array.isArray(authUser.role)) {
-      return authUser.role.includes("ROLE_ADMIN");
-    }
-    return authUser.role === "ROLE_ADMIN";
-  }, [authUser]);
-
-  console.log("authUser:", authUser);
-  console.log("isOwnProfile:", isOwnProfile);
-  console.log("isAdmin:", isAdmin);
-
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -140,8 +121,7 @@ const ProfilePage = () => {
       dispatch({ type: "SET_USER_PROFILE", payload: updatedUser });
       dispatch(updateAuthUserProfileImage(updatedUser));
       setViewedUser(updatedUser);
-    } catch (err) {
-      console.error(err);
+    } catch {
       alert("Errore nel caricamento dell'immagine");
     }
   };
@@ -182,56 +162,16 @@ const ProfilePage = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <Container className="text-center py-5">
-        <Spinner animation="border" />
-      </Container>
-    );
-  }
-
-  /*   if (error || !viewedUser) {
-    return (
-      <Container className="text-center py-5">
-        <Alert variant="danger">{error || "Errore caricamento profilo"}</Alert>
-      </Container>
-    );
-  } */
-  if (isAdmin && isOwnProfile) {
-    return (
-      <Container className="text-center py-5">
-        <Alert variant="info">
-          Sei autenticato come amministratore. Non hai un profilo personale, ma puoi visualizzare gli utenti.
-        </Alert>
-      </Container>
-    );
-  }
-
-  if (error || !viewedUser) {
-    return (
-      <Container className="text-center py-5">
-        <Alert variant="danger">{error || "Errore caricamento profilo"}</Alert>
-      </Container>
-    );
-  }
-
   const handleDeleteArticle = (deletedArticleId) => {
-    setViewedUserArticles((prev) => prev.filter((article) => article.id !== deletedArticleId));
+    setViewedUserArticles((prev) => prev.filter((a) => a.id !== deletedArticleId));
   };
+
   const handleConfirmDeleteProfile = async () => {
     const token = localStorage.getItem("token");
-
     if (!token || !authUser) {
       setDeleteError("Dati utente non disponibili. Riprova più tardi.");
       return;
     }
-
-    const isOwnProfile = Number(userId) === authUser.id;
-
-    console.log("authUser.id:", authUser.id);
-    console.log("authUser.role:", authUser.role);
-    console.log("isOwnProfile:", isOwnProfile);
-    console.log("isAdmin:", isAdmin);
 
     try {
       if (isAdmin && !isOwnProfile) {
@@ -251,8 +191,32 @@ const ProfilePage = () => {
     }
   };
 
+  if (loading) {
+    return <Loader message="Caricamento profilo in corso..." />;
+  }
+
+  // Admin senza profilo
+  if (isAdmin && isOwnProfile) {
+    return (
+      <Container className="text-center py-5">
+        <Alert variant="info">
+          Sei autenticato come amministratore. Non hai un profilo personale, ma puoi visualizzare gli utenti.
+        </Alert>
+      </Container>
+    );
+  }
+
+  if (error || !viewedUser) {
+    return (
+      <Container className="text-center py-5">
+        <Alert variant="danger">{error || "Errore caricamento profilo"}</Alert>
+      </Container>
+    );
+  }
+
   return (
     <Container className="py-5">
+      {/* 🔳 Header profilo */}
       <Row className="align-items-center mb-4">
         <Col md="auto" className="text-center position-relative">
           <div className="profile-avatar position-relative">
@@ -264,6 +228,7 @@ const ProfilePage = () => {
               width={130}
               height={130}
             />
+
             {isOwnProfile && (
               <>
                 <div
@@ -271,13 +236,11 @@ const ProfilePage = () => {
                   className="custom-camera-wrapper position-absolute bottom-0 end-0"
                   title="Cambia foto profilo"
                   style={{
-                    cursor: "pointer",
-                    backgroundColor: "#fff",
                     borderRadius: "50%",
                     padding: "4px",
                   }}
                 >
-                  <MdOutlineCameraAlt size={20} />
+                  <FaCamera size={20} />
                 </div>
                 <Form.Control
                   type="file"
@@ -292,8 +255,31 @@ const ProfilePage = () => {
         </Col>
 
         <Col>
-          <h3 className="fw-bold">{viewedUser.username}</h3>
-          <p className="text-muted">{viewedUser.email}</p>
+          <div className="d-flex justify-content-between align-items-start flex-wrap">
+            <div>
+              <h2 className="fw-bold green mb-1">
+                {viewedUser.username !== viewedUser.email ? viewedUser.username : "Nome non disponibile"}
+              </h2>
+              <p className="text-muted mb-4">{viewedUser.email}</p>
+            </div>
+            {isOwnProfile && (
+              <Button
+                variant="danger"
+                size="sm"
+                className="btn-delete"
+                onClick={() => setShowDeleteModal(true)}
+                disabled={!authUser}
+              >
+                Elimina Profilo
+              </Button>
+            )}
+            {isAdmin && !isOwnProfile && (
+              <Button variant="danger" className="btn-delete ms-2" onClick={() => setShowDeleteModal(true)}>
+                Elimina utente
+              </Button>
+            )}
+          </div>
+          {/*Descrizione profilo */}
           {isOwnProfile ? (
             isEditingProfileDescription ? (
               <>
@@ -303,11 +289,11 @@ const ProfilePage = () => {
                   value={profileDescription}
                   onChange={(e) => setProfileDescription(e.target.value)}
                 />
-                <div className="text-end mt-2">
+                <div className="text-end mt-3 me-3">
                   <Button
                     size="sm"
                     variant="secondary"
-                    className="me-2"
+                    className="me-2 profile-cancel-btn"
                     onClick={() => {
                       setProfileDescription(viewedUser.description || "");
                       setIsEditingProfileDescription(false);
@@ -315,20 +301,19 @@ const ProfilePage = () => {
                   >
                     Annulla
                   </Button>
-                  <Button size="sm" variant="success" onClick={handleSaveProfileDescription}>
+                  <Button size="sm" variant="success" className="btn-green" onClick={handleSaveProfileDescription}>
                     Salva
                   </Button>
                 </div>
               </>
             ) : (
-              <div className="d-flex align-items-center">
-                <p className="mb-0 me-2 flex-grow-1 text-muted">
-                  {viewedUser.description?.trim() || "Nessuna descrizione disponibile."}
-                </p>
+              <div className="mb-0 text-muted" style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                {viewedUser.description?.trim() || "Nessuna descrizione disponibile."}
                 <FaEdit
-                  size={18}
+                  size={22}
                   onClick={() => setIsEditingProfileDescription(true)}
                   style={{ cursor: "pointer" }}
+                  className="ms-2 green"
                   title="Modifica descrizione"
                 />
               </div>
@@ -336,37 +321,28 @@ const ProfilePage = () => {
           ) : (
             <p className="text-muted">{viewedUser.description || "Nessuna descrizione disponibile."}</p>
           )}
-          <div className="mt-3">
-            {isOwnProfile && (
-              <Button variant="danger" onClick={() => setShowDeleteModal(true)} disabled={!authUser}>
-                Elimina Profilo
-              </Button>
-            )}
-
-            {isAdmin && !isOwnProfile && (
-              <Button variant="danger" onClick={() => setShowDeleteModal(true)} className="ms-2">
-                Elimina utente come Admin
-              </Button>
-            )}
-          </div>
         </Col>
       </Row>
 
-      <hr className="my-5" />
+      <hr className="my-5 green" />
 
-      <h4>{isOwnProfile ? "I tuoi annunci" : `Annunci di ${viewedUser.username}`}</h4>
+      {/* Articoli */}
+      <h4 className="mb-4 green fw-semibold">
+        {isOwnProfile ? "I tuoi annunci" : `Annunci di ${viewedUser.username}`}
+      </h4>
       {viewedUserArticles.length === 0 ? (
         <p>Nessun articolo pubblicato.</p>
       ) : (
         <Row>
           {viewedUserArticles.map((article) => (
             <div key={article.id} className="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2-4-custom mb-4">
-              <ArticleCard article={article} onClick={handleCardClick} showFavoriteIcon={!isOwnProfile} />
+              <ArticleCard article={article} onClick={handleCardClick} showFavoriteIcon={!isOwnProfile && !isAdmin} />
             </div>
           ))}
         </Row>
       )}
 
+      {/* Modale articoli */}
       {isOwnProfile && (
         <ArticleModal
           show={showModal}
@@ -382,6 +358,8 @@ const ProfilePage = () => {
           handleDelete={handleDeleteArticle}
         />
       )}
+
+      {/* Modale eliminazione profilo */}
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Conferma Eliminazione</Modal.Title>
@@ -396,34 +374,11 @@ const ProfilePage = () => {
             </Alert>
           )}
         </Modal.Body>
-
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
-            Annulla
-          </Button>
-
-          {/*           <Button
-            variant="danger"
-            onClick={() => {
-              if (authUser) {
-                handleConfirmDeleteProfile();
-              } else {
-                setDeleteError("Dati utente non disponibili. Riprova tra qualche secondo.");
-              }
-            }}
-            disabled={!authUser}
-          >
-            Elimina Profilo
-          </Button> */}
           <Button
             variant="danger"
-            onClick={() => {
-              if (isAdmin || isOwnProfile) {
-                handleConfirmDeleteProfile();
-              } else {
-                setDeleteError("Operazione non consentita.");
-              }
-            }}
+            className="btn-delete"
+            onClick={handleConfirmDeleteProfile}
             disabled={!(isAdmin || isOwnProfile)}
           >
             Elimina Profilo

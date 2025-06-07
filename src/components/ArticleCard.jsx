@@ -7,34 +7,46 @@ import { fetchFavorites, toggleFavorite, setFavorites } from "../redux/actions/i
 const ArticleCard = ({ article, onClick, showFavoriteIcon = true }) => {
   const dispatch = useDispatch();
   const token = localStorage.getItem("token");
-  const favoriteArticles = useSelector((state) => state.favorites.favorites); // ATTENZIONE: qui è "favorites" non "articles"
+  const favoriteArticles = useSelector((state) => state.favorites.favorites);
   const [isHovered, setIsHovered] = useState(false);
 
-  const isFavorited = favoriteArticles.some((fav) => fav.id === article.id);
+  const [localIsFavorited, setLocalIsFavorited] = useState(favoriteArticles.some((fav) => fav.id === article.id));
+  const [localLikesCount, setLocalLikesCount] = useState(article.likesCount);
 
   useEffect(() => {
     if (token) {
-      // carico i preferiti all'avvio
       fetchFavorites(token)
         .then((articles) => dispatch(setFavorites(articles)))
         .catch((err) => console.error("Errore fetch preferiti:", err));
     }
   }, [dispatch, token]);
 
+  useEffect(() => {
+    setLocalIsFavorited(favoriteArticles.some((fav) => fav.id === article.id));
+  }, [favoriteArticles, article.id]);
+
   const handleToggleFavorite = (e) => {
     e.stopPropagation();
+
     if (!token) {
       window.dispatchEvent(new Event("openRegisterModal"));
       return;
     }
+    toggleFavorite(article.id, token, localIsFavorited)
+      .then((updatedFavorites) => {
+        dispatch(setFavorites(updatedFavorites));
 
-    toggleFavorite(article.id, token, isFavorited)
-      .then((updatedFavorites) => dispatch(setFavorites(updatedFavorites)))
+        const isNowFavorited = updatedFavorites.some((fav) => fav.id === article.id);
+        const newLikesCount = isNowFavorited ? localLikesCount + 1 : localLikesCount - 1;
+
+        setLocalIsFavorited(isNowFavorited);
+        setLocalLikesCount(newLikesCount);
+      })
       .catch((err) => console.error("Errore toggle favorito:", err));
   };
 
   return (
-    <Card onClick={() => onClick(article)} className="article-card position-relative">
+    <Card onClick={() => onClick(article)} className="article-card position-relative ">
       <Card.Img
         variant="top"
         src={article.imageUrls?.[0] || "https://via.placeholder.com/300"}
@@ -48,11 +60,14 @@ const ArticleCard = ({ article, onClick, showFavoriteIcon = true }) => {
           onMouseLeave={() => setIsHovered(false)}
           style={{ cursor: "pointer", zIndex: 10 }}
         >
-          {isFavorited || isHovered ? (
-            <GoHeartFill className="green" size={20} />
-          ) : (
-            <GoHeart className="green" size={20} />
-          )}
+          <div className="d-flex align-items-center gap-1">
+            {localIsFavorited || isHovered ? (
+              <GoHeartFill className="green" size={20} />
+            ) : (
+              <GoHeart className="green" size={20} />
+            )}
+            <span className="small text-dark">{localLikesCount}</span>
+          </div>
         </div>
       )}
     </Card>
