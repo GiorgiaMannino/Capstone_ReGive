@@ -1,15 +1,21 @@
-<!-- # React + Vite
+♻️ ReGive
+ReGive è una web app che che rende semplice donare oggetti usati, prolungandone il ciclo di vita e contribuendo a diffondere il valore del riuso. Nasce per offrire uno strumento semplice ma efficace che consenta di dare nuovo valore a ciò che non serve più, trasformandolo in una risorsa utile per qualcun altro. Gli utenti possono registrarsi, creare un profilo personale e pubblicare annunci per donare oggetti non più utilizzati, inserendo descrizione, immagini e selezionando la categoria di appartenenza. È possibile consultare tutti gli oggetti disponibili sulla piattaforma, con la possibilità di filtrarli per categoria o per data di pubblicazione. Una sezione dedicata al "Prima & Dopo" consente di condividere restauri creativi o trasformazioni degli oggetti, offrendo spunti per ispirare la community e promuovere il riuso. Questa area diventa uno spazio motivazionale, contribuendo alla diffusione di una cultura del recupero e della sostenibilità. L’app è progettata per offrire un’esperienza coinvolgente e appagante, favorendo la condivisione responsabile e incoraggiando il riutilizzo consapevole degli oggetti.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+🎯 Obiettivo del Progetto
 
-Currently, two official plugins are available:
+ReGive mira a promuovere una cultura del riuso attraverso una piattaforma che incentivi la donazione gratuita di oggetti usati, contribuendo così alla riduzione degli sprechi e alla valorizzazione delle risorse esistenti. L’obiettivo è quello di favorire comportamenti sostenibili e rendere accessibili beni utili a chi ne ha bisogno, riducendo gli ostacoli economici legati all’acquisto. La sezione "Prima & Dopo" gioca un ruolo chiave nel rafforzare l’impatto educativo e creativo del progetto, mostrando esempi concreti di recupero e ispirando gli utenti a dare nuova forma e funzione agli oggetti, all’interno di una community attenta all’ambiente e alla condivisione responsabile.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+🛠️ Tecnologie Utilizzate
 
-## Expanding the ESLint configuration
+Frontend: React · Redux · Bootstrap · CSS Animations
+Backend: Java · Spring · Spring Security · Spring Boot Mail
+Database: PostgreSQL
+Gestione immagini: Cloudinary
+Gestione pagamenti: Stripe
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
- -->
+---
 
- 
+🔗 Il codice backend di questo progetto è disponibile in una repository separata.  
+(https://github.com/GiorgiaMannino/Capstone_ReGive_back_end)
+
+---
