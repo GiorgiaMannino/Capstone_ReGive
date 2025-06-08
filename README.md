@@ -19,10 +19,3 @@ ReGive mira a promuovere una cultura del riuso attraverso una piattaforma che in
 ▪️ Gestione immagini: Cloudinary
 
 ▪️ Gestione pagamenti: Stripe
-
----
-
-🔗 Il codice backend di questo progetto è disponibile in una repository separata.  
-(https://github.com/GiorgiaMannino/Capstone_ReGive_back_end)
-
----
