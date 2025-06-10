@@ -10,7 +10,7 @@ ReGive mira a promuovere una cultura del riuso attraverso una piattaforma che in
 
 🛠️ Tecnologie Utilizzate
 
-▪️ Frontend: React · Redux · Bootstrap · CSS Animations
+▪️ Frontend: React · Redux · Bootstrap · Animate.css
 
 ▪️ Backend: Java · Spring · Spring Security · Spring Boot Mail
 
