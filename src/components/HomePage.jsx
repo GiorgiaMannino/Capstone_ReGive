@@ -10,6 +10,7 @@ import heroImage from "../assets/heroImage.jpg";
 import Loader from "./Loader";
 import "animate.css";
 import { FaUsers, FaNewspaper } from "react-icons/fa";
+import { FaStar } from "react-icons/fa";
 
 // Animazioni su scroll
 const useAnimateOnScroll = (trigger) => {
@@ -375,20 +376,68 @@ const HomePage = () => {
             >
               <h2 className="mb-4 green">Cosa dicono gli utenti</h2>
               <div className="container">
-                <Carousel indicators={false} controls interval={5000}>
-                  {[
-                    "Ho dato via il mio vecchio tostapane e ho ricevuto una lampada fantastica in cambio!",
-                    "App semplice e utile! Ho conosciuto anche persone nuove nel mio quartiere.",
-                    "Scambiare oggetti è diventato divertente! Ottima per dare nuova vita a ciò che non usavo.",
-                    "Finalmente un'app utile e sostenibile. Complimenti a chi l'ha creata!",
-                  ].map((quote, i) => (
-                    <Carousel.Item key={i}>
-                      <blockquote className="testimonial-block">
-                        <p>“{quote}”</p>
-                        <footer className="text-white">— Utente #{i + 1}</footer>
-                      </blockquote>
-                    </Carousel.Item>
-                  ))}
+                <Carousel indicators={false} controls interval={2700}>
+                  <Carousel.Item>
+                    <blockquote className="testimonial-block px-3">
+                      <div className="text-warning mb-2">
+                        {[...Array(5)].map((_, j) => (
+                          <FaStar key={j} className="mx-1 fs-5" />
+                        ))}
+                      </div>
+                      <p className="mb-3 p-2">
+                        “App molto intuitiva. Ho dato via vecchi oggetti che non usavo più e ho trovato cose utili per
+                        casa. La sezione 'Prima & Dopo' è davvero ispirante.”
+                      </p>
+                      <footer className="text-white">— Giulia R.</footer>
+                    </blockquote>
+                  </Carousel.Item>
+
+                  <Carousel.Item>
+                    <blockquote className="testimonial-block px-3">
+                      <div className="text-warning mb-2">
+                        {[...Array(4)].map((_, j) => (
+                          <FaStar key={j} className="mx-1 fs-5" />
+                        ))}
+                        <FaStar className="mx-1 text-secondary fs-5" />
+                      </div>
+                      <p className="mb-3 p-2">
+                        “Adoro l’idea di ridare valore a quello che non serve più. Ho regalato una sedia rotta e l’hanno
+                        trasformata in qualcosa di bellissimo!”
+                      </p>
+
+                      <footer className="text-white">— Luca M.</footer>
+                    </blockquote>
+                  </Carousel.Item>
+
+                  <Carousel.Item>
+                    <blockquote className="testimonial-block px-3">
+                      <div className="text-warning mb-2">
+                        {[...Array(5)].map((_, j) => (
+                          <FaStar key={j} className="mx-1 fs-5" />
+                        ))}
+                      </div>
+                      <p className="mb-3 p-2">
+                        “ReGive è facilissima da usare! Ho donato una libreria e nel giro di un’ora avevo già trovato
+                        qualcuno interessato.”
+                      </p>
+                      <footer className="text-white">— Serena B.</footer>
+                    </blockquote>
+                  </Carousel.Item>
+
+                  <Carousel.Item>
+                    <blockquote className="testimonial-block px-3">
+                      <div className="text-warning mb-2">
+                        {[...Array(4)].map((_, j) => (
+                          <FaStar key={j} className="mx-1 fs-5" />
+                        ))}
+                        <FaStar className="mx-1 text-secondary fs-5" />
+                      </div>
+                      <p className="mb-3 p-2">
+                        “Finalmente un modo semplice e utile per dare nuova vita agli oggetti!”
+                      </p>
+                      <footer className="text-white">— Marco T.</footer>
+                    </blockquote>
+                  </Carousel.Item>
                 </Carousel>
               </div>
             </section>

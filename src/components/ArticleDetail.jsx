@@ -108,12 +108,12 @@ const ArticleDetail = () => {
   return (
     <Container className="p-4 d-flex flex-column align-items-center">
       {breadcrumbItems && (
-        <div className="w-100 mb-3">
+        <div className="w-100 mb-3 mt-4">
           <CustomBreadcrumb items={breadcrumbItems} />
         </div>
       )}
 
-      <div className="p-3 w-100 mt-3">
+      <div className="p-3 w-100 mt-3 mb-4" style={{ maxWidth: "1000px" }}>
         <div className="d-flex justify-content-between align-items-center">
           <Link
             to={`/profile/${authorProfile?.id}`}

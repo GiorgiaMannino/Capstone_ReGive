@@ -4,6 +4,7 @@ body {
   font-family: "Manrope", sans-serif;
   color: #292929;
   background-color: #f7f7f7;
+  overflow-y: scroll;
 }
 
 /* ---------------------------------------------------------------------------------------------------------------------- */
@@ -260,7 +261,7 @@ body {
 }
 
 .testimonials-section blockquote {
-  background: #e7ebe7;
+  background: #e7ebe79c;
   border-left: 4px solid #557754;
   padding: 1rem;
   margin: 1rem;
@@ -271,7 +272,7 @@ body {
 footer {
   background-color: #557754;
   color: #ffffff;
-  padding: 2rem 1rem;
+  padding: 0.5rem 1rem;
 }
 
 footer a {
@@ -810,7 +811,7 @@ footer a:hover {
 }
 
 .article-detail-carousel {
-  max-height: 700px;
+  max-height: 650px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -820,16 +821,16 @@ footer a:hover {
 .article-detail-carousel img {
   min-height: 500px;
 
-  max-width: 100%;
+  max-width: 50%;
   object-fit: cover;
   border-radius: 0;
 }
 
 .article-detail-carousel .carousel-control-prev {
-  left: 8%;
+  left: 10%;
 }
 .article-detail-carousel .carousel-control-next {
-  right: 8%;
+  right: 10%;
 }
 
 .carousel-control-prev-icon,
@@ -883,14 +884,6 @@ footer a:hover {
   .article-detail-icon {
     width: 20px;
     height: 20px;
-  }
-
-  .article-detail-carousel {
-    max-height: 300px;
-  }
-
-  .article-detail-carousel img {
-    max-height: 300px;
   }
 
   .article-user-img {
@@ -1063,8 +1056,8 @@ footer a:hover {
 /* BEFORE AFTER PAGE - CSS*/
 
 .beforeafter-grid {
-  column-count: 3; /* o 2 su mobile */
-  column-gap: 1.5rem;
+  column-count: 4;
+  column-gap: 1rem;
 }
 
 .article-wrapper {
@@ -1095,22 +1088,18 @@ footer a:hover {
   border-color: #445f44 !important;
 }
 
-.override-article-style .article-card {
-  display: block;
-  width: 100%;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+.override-article-style .article-wrapper:nth-child(4n) .article-card {
+  height: 430px;
 }
 
-.override-article-style .article-wrapper:nth-child(3n) .article-card {
+.override-article-style .article-wrapper:nth-child(4n + 1) .article-card {
+  height: 500px;
+}
+.override-article-style .article-wrapper:nth-child(4n + 2) .article-card {
   height: 350px;
 }
-.override-article-style .article-wrapper:nth-child(3n + 1) .article-card {
-  height: 450px;
-}
-.override-article-style .article-wrapper:nth-child(3n + 2) .article-card {
-  height: 380px;
+.override-article-style .article-wrapper:nth-child(4n + 3) .article-card {
+  height: 350px;
 }
 
 .view-post-modal .modal-content {

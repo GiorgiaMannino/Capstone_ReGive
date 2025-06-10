@@ -59,7 +59,7 @@ const FavoriteArticlesPage = () => {
   }
 
   return (
-    <div className="container mt-5">
+    <div className="container mt-5 " style={{ minHeight: "600px" }}>
       {/* Breadcrumb */}
       <div className="container mt-4 mb-2">
         <CustomBreadcrumb items={breadcrumbItems} />

@@ -1,14 +1,15 @@
 import { useNavigate } from "react-router-dom";
 
-import { BsFillTvFill, BsLampFill } from "react-icons/bs";
+import { BsFillTvFill } from "react-icons/bs";
 import { IoBook, IoExtensionPuzzle } from "react-icons/io5";
 import { PiCookingPotFill } from "react-icons/pi";
 import { FaCat, FaDumbbell, FaStopwatch } from "react-icons/fa6";
+import { RiSofaFill } from "react-icons/ri";
 
 // Dati delle categorie: label e icona
 const categories = [
   { label: "ELETTRONICA", icon: <BsFillTvFill /> },
-  { label: "ARREDO", icon: <BsLampFill /> },
+  { label: "ARREDO", icon: <RiSofaFill /> },
   { label: "LIBRI", icon: <IoBook /> },
   { label: "GIOCHI", icon: <IoExtensionPuzzle /> },
   { label: "CUCINA", icon: <PiCookingPotFill /> },

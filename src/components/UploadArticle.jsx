@@ -2,9 +2,16 @@ import React, { useState } from "react";
 import { uploadArticle } from "../redux/actions";
 import { useNavigate } from "react-router-dom";
 import Loader from "./Loader";
+import CustomBreadcrumb from "./CustomBreadcrumb";
 
 // Lista categorie
 const categories = ["Elettronica", "Arredo", "Libri", "Giochi", "Cucina", "Sport", "Accessori", "Animali"];
+
+// Breadcrumb
+const breadcrumbItems = [
+  { label: "Home", href: "/" },
+  { label: "Nuovo Articolo", href: "" },
+];
 
 const UploadArticle = () => {
   const [title, setTitle] = useState("");
@@ -48,11 +55,16 @@ const UploadArticle = () => {
   };
 
   return (
-    <div className="upload-page container mt-3 mb-3 py-5">
+    <div className="upload-page container mb-3 py-4">
       {loading ? (
         <Loader message="Caricamento articolo in corso..." />
       ) : (
         <>
+          {breadcrumbItems && (
+            <div className="w-100 mb-3 mt-4 ms-2">
+              <CustomBreadcrumb items={breadcrumbItems} />
+            </div>
+          )}
           <h2 className="mb-5 mt-5">Carica un nuovo articolo</h2>
           <form onSubmit={handleSubmit} encType="multipart/form-data">
             {/* Titolo */}
